@@ -15,6 +15,7 @@ create table if not exists public.expenses (
   event_id uuid not null references public.events(id) on delete cascade,
   item_name text not null,
   amount numeric not null check (amount >= 0),
+  quantity integer check (quantity >= 0),
   amounts jsonb not null default '[]'::jsonb,
   item_image text,
   note text
@@ -35,6 +36,7 @@ create table if not exists public.exchanges (
   receiver_item_text text not null default '',
   receiver_item_image text,
   sender_item_text text not null,
+  sender_expense_id uuid references public.expenses(id) on delete set null,
   is_prepared boolean not null default false,
   is_completed boolean not null default false,
   note text

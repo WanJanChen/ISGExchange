@@ -20,4 +20,6 @@
   .status-done { @apply bg-emerald-100 text-emerald-700; }
   .section-kicker { @apply text-xs font-black tracking-widest text-rosequartz-600; }
   .section-title { @apply mt-1 text-xl font-black text-slate-800; }
+  .exchange-card > div > img,
+  .exchange-card > div > div:first-child { width: min(200px, 100%) !important; max-width: 100% !important; height: auto !important; aspect-ratio: 1 / 1; }
 }

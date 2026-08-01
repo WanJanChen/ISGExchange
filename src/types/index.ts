@@ -15,6 +15,7 @@ export interface Expense {
   note?: string
   itemImage?: string
   amounts?: ExpenseAmount[]
+  quantity?: number
 }
 
 export interface ExpenseAmount {
@@ -38,6 +39,7 @@ export interface Exchange {
   receiverItemText: string
   receiverItemImage?: string
   senderItemText: string
+  senderExpenseId?: string
   isPrepared: boolean
   isCompleted: boolean
   note?: string
@@ -48,7 +50,7 @@ export interface ExchangeDraft {
   platform: SocialPlatform
   nickname: string
   receiver: string
-  sender: string
+  senderExpenseId: string
   note: string
   image?: string
 }
