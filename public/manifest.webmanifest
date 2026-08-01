@@ -1,0 +1,17 @@
+{
+  "name": "應援交換小幫手",
+  "short_name": "應援交換",
+  "description": "演唱會應援禮物交換與成本管理工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF8F7",
+  "theme_color": "#D78C91",
+  "icons": [
+    {
+      "src": "/AppIcon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
