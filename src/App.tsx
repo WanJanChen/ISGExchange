@@ -31,6 +31,19 @@ export default function App() {
   const eventExpenses = useMemo(() => data.expenses.filter((item) => item.eventId === selectedEventId), [data.expenses, selectedEventId])
   const eventDates = useMemo(() => data.dates.filter((item) => item.eventId === selectedEventId).sort((a, b) => a.dateLabel.localeCompare(b.dateLabel)), [data.dates, selectedEventId])
   const expenseTotal = (expense: { amount: number; amounts?: ExpenseAmount[] }) => expense.amounts?.reduce((sum, row) => sum + row.amount, 0) ?? expense.amount
+  useEffect(() => {
+    setData((current) => {
+      const firstDate = (eventId: string) => current.dates.filter((date) => date.eventId === eventId).map((date) => date.dateLabel).sort()[0]
+      const events = [...current.events].sort((a, b) => {
+        const aDate = firstDate(a.id)
+        const bDate = firstDate(b.id)
+        if (!aDate) return bDate ? 1 : 0
+        if (!bDate) return -1
+        return bDate.localeCompare(aDate)
+      })
+      return events.every((event, index) => event.id === current.events[index]?.id) ? current : { ...current, events }
+    })
+  }, [data.dates])
 
   const addEvent = (title: string, firstDate: string, posterImage?: string) => { const id = createId(); setData((current) => ({ ...current, events: [{ id, title, createdAt: new Date().toISOString(), posterImage }, ...current.events], dates: firstDate ? [...current.dates, { id: createId(), eventId: id, dateLabel: firstDate }] : current.dates })); setShowForm(false); setSelectedEventId(id); notify('活動已建立') }
   const updateEvent = (title: string, firstDate: string, posterImage?: string) => { if (!editingEvent) return; setData((current) => { const existingDates = current.dates.filter((date) => date.eventId === editingEvent.id); const dates = firstDate ? existingDates.length ? current.dates.map((date) => date.id === existingDates[0].id ? { ...date, dateLabel: firstDate } : date) : [...current.dates, { id: createId(), eventId: editingEvent.id, dateLabel: firstDate }] : current.dates; return { ...current, events: current.events.map((event) => event.id === editingEvent.id ? { ...event, title, posterImage } : event), dates } }); setEditingEventId(undefined); notify('活動已更新') }
