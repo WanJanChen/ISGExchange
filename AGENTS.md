@@ -21,7 +21,7 @@
    - `event_id`: uuid (Foreign Key -> events.id, ON DELETE CASCADE)
    - `item_name`: text (例如："貼紙印製費", "霧面小卡")
    - `amount`: numeric (金額)
-   - `note`: text (可選備註)
+   - `note`: text (選填備註)
 
 3. **`event_dates` 表 (活動多個日期/場次 - 關聯至 events):**
    - `id`: uuid (Primary Key)
@@ -37,7 +37,7 @@
    - `sender_item_text`: text (我方提供的禮物描述)
    - `is_prepared`: boolean (預設 false，我方品項是否已準備好)
    - `is_completed`: boolean (預設 false，現場是否已完成交換)
-   - `note`: text (可選備註，如："約在 3 號出口前")
+   - `note`: text (備註，如："約在 3 號出口前")
 
 ---
 
