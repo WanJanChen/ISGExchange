@@ -40,6 +40,7 @@ export interface Exchange {
   receiverItemImage?: string
   senderItemText: string
   senderExpenseId?: string
+  senderExpenseIds?: string[]
   isPrepared: boolean
   isCompleted: boolean
   note?: string
@@ -50,7 +51,7 @@ export interface ExchangeDraft {
   platform: SocialPlatform
   nickname: string
   receiver: string
-  senderExpenseId: string
+  senderExpenseIds: string[]
   note: string
   image?: string
 }

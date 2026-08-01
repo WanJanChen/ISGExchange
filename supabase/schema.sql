@@ -37,6 +37,7 @@ create table if not exists public.exchanges (
   receiver_item_image text,
   sender_item_text text not null,
   sender_expense_id uuid references public.expenses(id) on delete set null,
+  sender_expense_ids uuid[] not null default '{}',
   is_prepared boolean not null default false,
   is_completed boolean not null default false,
   note text
