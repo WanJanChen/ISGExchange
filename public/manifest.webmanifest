@@ -1,6 +1,6 @@
 {
   "name": "應援交換小幫手",
-  "short_name": "應援交換",
+  "short_name": "應援交換小幫手",
   "description": "演唱會應援禮物交換與成本管理工具",
   "start_url": "/",
   "display": "standalone",
