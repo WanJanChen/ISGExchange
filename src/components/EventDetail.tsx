@@ -27,7 +27,7 @@ export function EventDetail(props: Props) {
   const [selectedDate, setSelectedDate] = useState(props.dates[0]?.id ?? '')
   const [dateLabel, setDateLabel] = useState('')
   const total = props.expenses.reduce((sum, item) => sum + item.amount, 0)
-  const activeExchanges = props.exchanges.filter((item) => item.eventDateId === selectedDate)
+  const activeExchanges = props.exchanges.filter((item) => item.eventDateId === selectedDate).sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted))
   const giftOptions = props.giftOptions ?? props.expenses.map((expense) => ({ id: expense.id, name: expense.itemName }))
   const reservedCounts = props.reservedCounts ?? props.exchanges.reduce<Record<string, number>>((counts, exchange) => {
     const expenseId = exchange.senderExpenseId ?? props.expenses.find((expense) => expense.itemName === exchange.senderItemText)?.id
