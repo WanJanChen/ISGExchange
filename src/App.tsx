@@ -25,6 +25,7 @@ export default function App() {
   useEffect(() => { let active = true; const load = async () => { try { if (isSupabaseConfigured && !(await getSignedInUser())) { if (active) setNeedsLogin(true); return }; const initialData = await initializeData(); if (active) setData(initialData) } catch (error) { if (active) setNotice(`讀取資料失敗：${(error as Error).message}`) } finally { if (active) setIsReady(true) } }; load(); return () => { active = false } }, [])
   useEffect(() => { if (!isReady || needsLogin) return; const timer = window.setTimeout(() => { persistData(data).catch((error: Error) => setNotice(`同步資料失敗：${error.message}`)) }, 500); return () => window.clearTimeout(timer) }, [data, isReady, needsLogin])
 
+  useEffect(() => { const updateDate = (event: Event) => { const detail = (event as CustomEvent<{ id: string; label: string }>).detail; if (!detail) return; setData((current) => ({ ...current, dates: current.dates.map((date) => date.id === detail.id ? { ...date, dateLabel: detail.label } : date) })) }; window.addEventListener('update-event-date', updateDate); return () => window.removeEventListener('update-event-date', updateDate) }, [])
   const selected = data.events.find((event) => event.id === selectedEventId)
   const editingEvent = data.events.find((event) => event.id === editingEventId)
   const notify = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(''), 2200) }

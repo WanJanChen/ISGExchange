@@ -22,4 +22,7 @@
   .section-title { @apply mt-1 text-xl font-black text-slate-800; }
   .exchange-card > div > img,
   .exchange-card > div > div:first-child { width: min(200px, 100%) !important; max-width: 100% !important; height: auto !important; aspect-ratio: 1 / 1; }
+  .exchange-card > div > div:last-child > div:first-child { flex-direction: column; align-items: stretch; }
+  .exchange-card > div > div:last-child > div:first-child > p { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+  .exchange-card > div > div:last-child > div:first-child > div { justify-content: flex-start; margin-top: 0.25rem; }
 }
