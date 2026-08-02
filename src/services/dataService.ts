@@ -26,6 +26,12 @@ export async function signInWithEmail(email: string, password: string) {
   if (error) throw error
 }
 
+export async function signOut() {
+  if (!supabase) return
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
 async function currentUserId(): Promise<string> {
   if (!supabase) throw new Error('尚未設定 Supabase 連線資訊。')
   const user = await getSignedInUser()

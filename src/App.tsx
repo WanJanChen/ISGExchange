@@ -1,11 +1,11 @@
-import { Heart, Plus } from 'lucide-react'
+import { Heart, LogOut, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { EventCard } from './components/EventCard'
 import { EventDetail } from './components/EventDetail'
 import { EventForm } from './components/EventForm'
 import { createId, readData } from './lib/storage'
 import { isSupabaseConfigured } from './lib/supabase'
-import { deleteCloudRecord, getSignedInUser, initializeData, persistData, signInWithEmail, signUpWithEmail } from './services/dataService'
+import { deleteCloudRecord, getSignedInUser, initializeData, persistData, signInWithEmail, signOut, signUpWithEmail } from './services/dataService'
 import type { AppData, ExchangeDraft, ExpenseAmount } from './types'
 
 export default function App() {
@@ -61,6 +61,21 @@ export default function App() {
     setData((current) => ({ events: current.events.filter((item) => item.id !== id), expenses: current.expenses.filter((item) => item.eventId !== id), dates: current.dates.filter((item) => item.eventId !== id), exchanges: current.exchanges.filter((item) => !dateIds.includes(item.eventDateId)) }))
     notify('活動已刪除')
   }
+  const logOut = async () => {
+    try {
+      await signOut()
+      setData({ events: [], expenses: [], dates: [], exchanges: [] })
+      setSelectedEventId(null)
+      setEditingEventId(undefined)
+      setShowForm(false)
+      setPassword('')
+      setConfirmPassword('')
+      setNeedsLogin(true)
+      setNotice('')
+    } catch (error) {
+      notify(`登出失敗：${(error as Error).message}`)
+    }
+  }
 
   if (!isReady) return <main className="flex min-h-screen items-center justify-center bg-serenity-50 text-sm font-bold text-serenity-700">正在讀取資料…</main>
   if (needsLogin) return <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-rosequartz-50 via-serenity-50 to-slate-50 p-4"><form onSubmit={async (event) => { event.preventDefault(); if (!email.trim() || !password) return; if (authMode === 'signUp' && password !== confirmPassword) { setNotice('兩次密碼輸入不一致'); return } if (authMode === 'signUp' && password.length < 8) { setNotice('密碼至少需要 8 個字元'); return } setIsAuthenticating(true); try { if (authMode === 'signUp') { const session = await signUpWithEmail(email.trim(), password, window.location.origin); if (!session) { setNotice('請到信箱完成驗證後再登入'); return } } else await signInWithEmail(email.trim(), password); setData(await initializeData()); setNeedsLogin(false); setNotice('登入成功，資料已開始同步') } catch (error) { setNotice(`登入失敗：${(error as Error).message}`) } finally { setIsAuthenticating(false) } }} className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-sm"><p className="section-kicker">CLOUD SYNC</p><h1 className="mt-1 text-2xl font-black text-slate-800">{authMode === 'signIn' ? '登入我的應援清單' : '建立雲端帳號'}</h1><p className="mt-2 text-sm leading-relaxed text-slate-500">使用 Email 與密碼同步你的活動資料。</p><div className="mt-5 grid grid-cols-2 gap-2"><button type="button" onClick={() => { setAuthMode('signIn'); setNotice('') }} className={`min-h-11 rounded-xl text-sm font-bold ${authMode === 'signIn' ? 'bg-serenity-600 text-white' : 'bg-serenity-50 text-serenity-700'}`}>登入</button><button type="button" onClick={() => { setAuthMode('signUp'); setNotice('') }} className={`min-h-11 rounded-xl text-sm font-bold ${authMode === 'signUp' ? 'bg-serenity-600 text-white' : 'bg-serenity-50 text-serenity-700'}`}>建立帳號</button></div><input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="你的 Email" className="field mt-3" /><input required type="password" minLength={8} autoComplete={authMode === 'signIn' ? 'current-password' : 'new-password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="密碼（至少 8 個字元）" className="field mt-3" />{authMode === 'signUp' && <input required type="password" minLength={8} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次輸入密碼" className="field mt-3" />}{notice && <p className="mt-3 text-sm text-serenity-700">{notice}</p>}<button disabled={isAuthenticating} className="primary-button mt-4 w-full disabled:opacity-60">{isAuthenticating ? '處理中…' : authMode === 'signIn' ? '登入' : '建立帳號'}</button></form></main>
@@ -84,9 +99,16 @@ export default function App() {
     <main className="min-h-screen bg-gradient-to-b from-rosequartz-50 via-serenity-50 to-slate-50">
       <div className="mx-auto max-w-2xl p-4 pb-12 sm:p-6">
         <header className="mb-7 pt-3 sm:pt-6">
-          <div className="mb-3 flex items-center gap-2 text-rosequartz-600">
-            <Heart size={20} fill="currentColor" />
-            <span className="text-sm font-black tracking-widest">MY SUPPORT KIT</span>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-rosequartz-600">
+              <Heart size={20} fill="currentColor" />
+              <span className="text-sm font-black tracking-widest">MY SUPPORT KIT</span>
+            </div>
+            {isSupabaseConfigured && (
+              <button type="button" onClick={logOut} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-bold text-slate-500 hover:bg-white" aria-label="登出帳號">
+                <LogOut size={18} />登出
+              </button>
+            )}
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-800">演唱會應援禮物交換</h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-500">管理製作成本、交換夥伴與現場發放數量。</p>
