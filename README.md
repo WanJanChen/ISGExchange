@@ -25,6 +25,11 @@
 
 
 ## 使用說明
-(待補)
+1-1.這個小工具可以直接使用瀏覽器輸入網址開啟：<a href="https://isgexchange.onrender.com">https://isgexchange.onrender.com</a></br>
+1-2.行動裝置可安裝成桌面捷徑快速開啟(使用google chrome)</br>
+<img src="ReadmePictures/1-1手機板安裝捷徑至桌面.jpg" width="20%" height="20%">
+<img src="ReadmePictures/1-2手機板手動安裝捷徑至桌面(chrome).jpg" width="20%" height="20%"></br>
+2-1.首次使用時需要註冊帳號，請設定Email與密碼後進行登入</br>
+<img src="ReadmePictures/2.首次使用註冊登入畫面.jpg" width="20%" height="20%"></br>
 
 
