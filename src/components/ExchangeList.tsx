@@ -62,10 +62,10 @@ function toDraft(exchange: Exchange): ExchangeDraft {
 interface Props {
   exchanges: Exchange[];
   giftOptions: { id: string; name: string }[];
-  onAdd: (draft: ExchangeDraft) => void;
-  onUpdate: (id: string, draft: ExchangeDraft) => void;
-  onToggle: (id: string, field: "isPrepared" | "isCompleted") => void;
-  onDelete: (id: string) => void;
+  onAdd: (draft: ExchangeDraft) => void | Promise<void>;
+  onUpdate: (id: string, draft: ExchangeDraft) => void | Promise<void>;
+  onToggle: (id: string, field: "isPrepared" | "isCompleted") => void | Promise<void>;
+  onDelete: (id: string) => void | Promise<void>;
 }
 
 export function ExchangeList({
@@ -113,7 +113,7 @@ export function ExchangeList({
     }
   };
   const platforms: SocialPlatform[] = ["threads", "instagram"];
-  const save = (event: FormEvent) => {
+  const save = async (event: FormEvent) => {
     event.preventDefault();
     if (
       !draft.contact.trim() ||
@@ -121,8 +121,8 @@ export function ExchangeList({
       draft.senderExpenseIds.length === 0
     )
       return;
-    if (editingId) onUpdate(editingId, draft);
-    else onAdd(draft);
+    if (editingId) await onUpdate(editingId, draft);
+    else await onAdd(draft);
     closeEditor();
   };
 

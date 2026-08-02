@@ -11,9 +11,9 @@ interface Props {
   expenses: Expense[]
   total: number
   reservedCounts: Record<string, number>
-  onAdd: (name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void
-  onUpdate: (id: string, name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void
-  onDelete: (id: string) => void
+  onAdd: (name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void | Promise<void>
+  onUpdate: (id: string, name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void | Promise<void>
+  onDelete: (id: string) => void | Promise<void>
 }
 
 export function ExpenseSection({ expenses, total, reservedCounts, onAdd, onUpdate, onDelete: deleteExpense }: Props) {
@@ -29,12 +29,12 @@ export function ExpenseSection({ expenses, total, reservedCounts, onAdd, onUpdat
   const fileRef = useRef<HTMLInputElement>(null)
   const reset = () => { setName(''); setAmounts([newAmount()]); setNote(''); setQuantity(''); setImage(undefined); setEditingId(undefined); setIsFormOpen(false) }
   const chooseImage = async (file?: File) => { if (!file) return; setIsCompressing(true); try { setImage(await compressImage(file)) } finally { setIsCompressing(false) } }
-  const submit = (event: FormEvent) => { event.preventDefault(); const rows = amounts.map((row) => ({ id: row.id, label: row.label.trim(), amount: Number(row.amount) })).filter((row) => Number.isFinite(row.amount) && row.amount >= 0); const totalQuantity = Number(quantity); if (!name.trim() || rows.length === 0 || !Number.isInteger(totalQuantity) || totalQuantity < 0) return; if (editingId) onUpdate(editingId, name.trim(), rows, note.trim(), image, totalQuantity); else onAdd(name.trim(), rows, note.trim(), image, totalQuantity); reset() }
+  const submit = async (event: FormEvent) => { event.preventDefault(); const rows = amounts.map((row) => ({ id: row.id, label: row.label.trim(), amount: Number(row.amount) })).filter((row) => Number.isFinite(row.amount) && row.amount >= 0); const totalQuantity = Number(quantity); if (!name.trim() || rows.length === 0 || !Number.isInteger(totalQuantity) || totalQuantity < 0) return; if (editingId) await onUpdate(editingId, name.trim(), rows, note.trim(), image, totalQuantity); else await onAdd(name.trim(), rows, note.trim(), image, totalQuantity); reset() }
   const edit = (expense: Expense) => { setEditingId(expense.id); setName(expense.itemName); setNote(expense.note ?? ''); setQuantity(String(expense.quantity ?? 0)); setImage(expense.itemImage); setAmounts(legacyAmounts(expense).map((row) => ({ id: row.id === 'legacy' ? createId() : row.id, label: row.label, amount: String(row.amount) }))); setIsFormOpen(true) }
   const changeAmount = (id: string, field: keyof Omit<AmountDraft, 'id'>, value: string) => setAmounts((rows) => rows.map((row) => row.id === id ? { ...row, [field]: value } : row))
-  const onDelete = (id: string) => {
+  const onDelete = async (id: string) => {
     const expense = expenses.find((item) => item.id === id)
-    if (window.confirm(`確定要刪除「${expense?.itemName ?? '此應援項目'}」嗎？此操作無法復原。`)) deleteExpense(id)
+    if (window.confirm(`確定要刪除「${expense?.itemName ?? '此應援項目'}」嗎？此操作無法復原。`)) await deleteExpense(id)
   }
 
   return <section className="card space-y-4">

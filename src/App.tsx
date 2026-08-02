@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { EventCard } from './components/EventCard'
 import { EventDetail } from './components/EventDetail'
 import { EventForm } from './components/EventForm'
-import { createId, readData } from './lib/storage'
+import { createId, readData, saveData } from './lib/storage'
 import { isSupabaseConfigured } from './lib/supabase'
-import { deleteCloudRecord, getSignedInUser, initializeData, persistData, signInWithEmail, signOut, signUpWithEmail } from './services/dataService'
-import type { AppData, ExchangeDraft, ExpenseAmount } from './types'
+import { deleteCloudRecord, getSignedInUser, initializeData, saveCloudDate, saveCloudEvent, saveCloudExchange, saveCloudExpense, signInWithEmail, signOut, signUpWithEmail } from './services/dataService'
+import type { AppData, Event as ConcertEvent, EventDate, Exchange, ExchangeDraft, Expense, ExpenseAmount } from './types'
 
 export default function App() {
   const [data, setData] = useState<AppData>(readData)
@@ -23,14 +23,22 @@ export default function App() {
   const [isAuthenticating, setIsAuthenticating] = useState(false)
 
   useEffect(() => { let active = true; const load = async () => { try { if (isSupabaseConfigured && !(await getSignedInUser())) { if (active) setNeedsLogin(true); return }; const initialData = await initializeData(); if (active) setData(initialData) } catch (error) { if (active) setNotice(`讀取資料失敗：${(error as Error).message}`) } finally { if (active) setIsReady(true) } }; load(); return () => { active = false } }, [])
-  useEffect(() => { if (!isReady || needsLogin) return; const timer = window.setTimeout(() => { persistData(data).catch((error: Error) => setNotice(`同步資料失敗：${error.message}`)) }, 500); return () => window.clearTimeout(timer) }, [data, isReady, needsLogin])
+  useEffect(() => { saveData(data) }, [data])
 
   useEffect(() => { const updateDate = (event: Event) => { const detail = (event as CustomEvent<{ id: string; label: string }>).detail; if (!detail) return; setData((current) => ({ ...current, dates: current.dates.map((date) => date.id === detail.id ? { ...date, dateLabel: detail.label } : date) })) }; window.addEventListener('update-event-date', updateDate); return () => window.removeEventListener('update-event-date', updateDate) }, [])
   const selected = data.events.find((event) => event.id === selectedEventId)
   const editingEvent = data.events.find((event) => event.id === editingEventId)
   const notify = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(''), 2200) }
-  const deleteFromCloud = (table: 'events' | 'expenses' | 'event_dates' | 'exchanges', id: string) => {
-    deleteCloudRecord(table, id).catch((error: Error) => setNotice(`雲端刪除失敗：${error.message}`))
+  const syncCloud = async <T,>(successMessage: string, operation: () => Promise<T>) => {
+    setNotice('正在同步至雲端…')
+    try {
+      const result = await operation()
+      notify(successMessage)
+      return result
+    } catch (error) {
+      setNotice(`同步失敗：${(error as Error).message}`)
+      throw error
+    }
   }
   const eventExpenses = useMemo(() => data.expenses.filter((item) => item.eventId === selectedEventId), [data.expenses, selectedEventId])
   const eventDates = useMemo(() => data.dates.filter((item) => item.eventId === selectedEventId).sort((a, b) => a.dateLabel.localeCompare(b.dateLabel)), [data.dates, selectedEventId])
@@ -49,17 +57,41 @@ export default function App() {
     })
   }, [data.dates])
 
-  const addEvent = (title: string, firstDate: string, posterImage?: string) => { const id = createId(); setData((current) => ({ ...current, events: [{ id, title, createdAt: new Date().toISOString(), posterImage }, ...current.events], dates: firstDate ? [...current.dates, { id: createId(), eventId: id, dateLabel: firstDate }] : current.dates })); setShowForm(false); setSelectedEventId(id); notify('活動已建立') }
-  const updateEvent = (title: string, firstDate: string, posterImage?: string) => { if (!editingEvent) return; setData((current) => { const existingDates = current.dates.filter((date) => date.eventId === editingEvent.id); const dates = firstDate ? existingDates.length ? current.dates.map((date) => date.id === existingDates[0].id ? { ...date, dateLabel: firstDate } : date) : [...current.dates, { id: createId(), eventId: editingEvent.id, dateLabel: firstDate }] : current.dates; return { ...current, events: current.events.map((event) => event.id === editingEvent.id ? { ...event, title, posterImage } : event), dates } }); setEditingEventId(undefined); notify('活動已更新') }
+  const addEvent = async (title: string, firstDate: string, posterImage?: string) => {
+    const eventItem: ConcertEvent = { id: createId(), title, createdAt: new Date().toISOString(), posterImage }
+    const dateItem: EventDate | undefined = firstDate ? { id: createId(), eventId: eventItem.id, dateLabel: firstDate } : undefined
+    await syncCloud('活動已建立並同步', async () => { await saveCloudEvent(eventItem); if (dateItem) await saveCloudDate(dateItem) })
+    setData((current) => ({ ...current, events: [eventItem, ...current.events], dates: dateItem ? [...current.dates, dateItem] : current.dates }))
+    setShowForm(false)
+    setSelectedEventId(eventItem.id)
+  }
+  const updateEvent = async (title: string, firstDate: string, posterImage?: string) => {
+    if (!editingEvent) return
+    const eventItem: ConcertEvent = { ...editingEvent, title, posterImage }
+    const existingDate = data.dates.find((date) => date.eventId === editingEvent.id)
+    const dateItem: EventDate | undefined = firstDate ? existingDate ? { ...existingDate, dateLabel: firstDate } : { id: createId(), eventId: editingEvent.id, dateLabel: firstDate } : undefined
+    await syncCloud('活動已更新並同步', async () => { await saveCloudEvent(eventItem); if (dateItem) await saveCloudDate(dateItem) })
+    setData((current) => ({ ...current, events: current.events.map((event) => event.id === eventItem.id ? eventItem : event), dates: dateItem ? existingDate ? current.dates.map((date) => date.id === dateItem.id ? dateItem : date) : [...current.dates, dateItem] : current.dates }))
+    setEditingEventId(undefined)
+  }
   const selectedGiftNames = (ids: string[]) => ids.map((id) => data.expenses.find((expense) => expense.id === id)?.itemName).filter(Boolean).join('、')
-  const addExchange = (eventDateId: string, draft: ExchangeDraft) => { const senderItemText = selectedGiftNames(draft.senderExpenseIds); setData((current) => ({ ...current, exchanges: [...current.exchanges, { id: createId(), eventDateId, contactHandle: draft.contact, contactPlatform: draft.platform, nickname: draft.nickname, receiverItemText: draft.receiver, receiverItemImage: draft.image, senderItemText, senderExpenseIds: draft.senderExpenseIds, note: draft.note, isPrepared: false, isCompleted: false }] })); notify('交換夥伴已加入') }
-  const updateExchange = (id: string, draft: ExchangeDraft) => { const senderItemText = selectedGiftNames(draft.senderExpenseIds); setData((current) => ({ ...current, exchanges: current.exchanges.map((exchange) => exchange.id === id ? { ...exchange, contactHandle: draft.contact, contactPlatform: draft.platform, nickname: draft.nickname, receiverItemText: draft.receiver, receiverItemImage: draft.image, senderItemText, senderExpenseId: undefined, senderExpenseIds: draft.senderExpenseIds, note: draft.note } : exchange) })); notify('交換資料已更新') }
-  const deleteEvent = (id: string, title: string) => {
+  const addExchange = async (eventDateId: string, draft: ExchangeDraft) => {
+    const item: Exchange = { id: createId(), eventDateId, contactHandle: draft.contact, contactPlatform: draft.platform, nickname: draft.nickname, receiverItemText: draft.receiver, receiverItemImage: draft.image, senderItemText: selectedGiftNames(draft.senderExpenseIds), senderExpenseIds: draft.senderExpenseIds, note: draft.note, isPrepared: false, isCompleted: false }
+    await syncCloud('交換夥伴已加入並同步', () => saveCloudExchange(item))
+    setData((current) => ({ ...current, exchanges: [...current.exchanges, item] }))
+  }
+  const updateExchange = async (id: string, draft: ExchangeDraft) => {
+    const existing = data.exchanges.find((exchange) => exchange.id === id)
+    if (!existing) return
+    const item: Exchange = { ...existing, contactHandle: draft.contact, contactPlatform: draft.platform, nickname: draft.nickname, receiverItemText: draft.receiver, receiverItemImage: draft.image, senderItemText: selectedGiftNames(draft.senderExpenseIds), senderExpenseId: undefined, senderExpenseIds: draft.senderExpenseIds, note: draft.note }
+    await syncCloud('交換資料已更新並同步', () => saveCloudExchange(item))
+    setData((current) => ({ ...current, exchanges: current.exchanges.map((exchange) => exchange.id === id ? item : exchange) }))
+  }
+  const deleteEvent = async (id: string, title: string) => {
     if (!window.confirm(`確定要刪除「${title}」嗎？相關資料也會一併刪除。`)) return
     const dateIds = data.dates.filter((date) => date.eventId === id).map((date) => date.id)
-    deleteFromCloud('events', id)
+    await syncCloud('活動已刪除並同步', () => deleteCloudRecord('events', id))
     setData((current) => ({ events: current.events.filter((item) => item.id !== id), expenses: current.expenses.filter((item) => item.eventId !== id), dates: current.dates.filter((item) => item.eventId !== id), exchanges: current.exchanges.filter((item) => !dateIds.includes(item.eventDateId)) }))
-    notify('活動已刪除')
   }
   const logOut = async () => {
     try {
@@ -85,15 +117,16 @@ export default function App() {
     expenses={eventExpenses}
     exchanges={data.exchanges.filter((item) => eventDates.some((date) => date.id === item.eventDateId))}
     onBack={() => setSelectedEventId(null)}
-    onAddDate={(dateLabel) => { const id = createId(); setData((current) => ({ ...current, dates: [...current.dates, { id, eventId: selected.id, dateLabel }] })); notify('已新增活動日期'); return id }}
-    onDeleteDate={(id) => { deleteFromCloud('event_dates', id); setData((current) => ({ ...current, dates: current.dates.filter((date) => date.id !== id), exchanges: current.exchanges.filter((exchange) => exchange.eventDateId !== id) })); notify('日期與當日清單已刪除') }}
-    onAddExpense={(itemName, amounts, note, itemImage, quantity) => { setData((current) => ({ ...current, expenses: [...current.expenses, { id: createId(), eventId: selected.id, itemName, amounts, amount: amounts.reduce((sum, row) => sum + row.amount, 0), note, itemImage, quantity }] })); notify('成本已加入') }}
-    onUpdateExpense={(id, itemName, amounts, note, itemImage, quantity) => { setData((current) => ({ ...current, expenses: current.expenses.map((expense) => expense.id === id ? { ...expense, itemName, amounts, amount: amounts.reduce((sum, row) => sum + row.amount, 0), note, itemImage, quantity } : expense) })); notify('成本已更新') }}
-    onDeleteExpense={(id) => { deleteFromCloud('expenses', id); setData((current) => ({ ...current, expenses: current.expenses.filter((item) => item.id !== id) })) }}
+    onAddDate={async (dateLabel) => { const item: EventDate = { id: createId(), eventId: selected.id, dateLabel }; await syncCloud('活動日期已新增並同步', () => saveCloudDate(item)); setData((current) => ({ ...current, dates: [...current.dates, item] })); return item.id }}
+    onUpdateDate={async (id, dateLabel) => { const existing = data.dates.find((date) => date.id === id); if (!existing) return; const item = { ...existing, dateLabel }; await syncCloud('活動日期已更新並同步', () => saveCloudDate(item)); setData((current) => ({ ...current, dates: current.dates.map((date) => date.id === id ? item : date) })) }}
+    onDeleteDate={async (id) => { await syncCloud('日期與當日清單已刪除並同步', () => deleteCloudRecord('event_dates', id)); setData((current) => ({ ...current, dates: current.dates.filter((date) => date.id !== id), exchanges: current.exchanges.filter((exchange) => exchange.eventDateId !== id) })) }}
+    onAddExpense={async (itemName, amounts, note, itemImage, quantity) => { const item: Expense = { id: createId(), eventId: selected.id, itemName, amounts, amount: amounts.reduce((sum, row) => sum + row.amount, 0), note, itemImage, quantity }; await syncCloud('成本已新增並同步', () => saveCloudExpense(item)); setData((current) => ({ ...current, expenses: [...current.expenses, item] })) }}
+    onUpdateExpense={async (id, itemName, amounts, note, itemImage, quantity) => { const existing = data.expenses.find((expense) => expense.id === id); if (!existing) return; const item: Expense = { ...existing, itemName, amounts, amount: amounts.reduce((sum, row) => sum + row.amount, 0), note, itemImage, quantity }; await syncCloud('成本已更新並同步', () => saveCloudExpense(item)); setData((current) => ({ ...current, expenses: current.expenses.map((expense) => expense.id === id ? item : expense) })) }}
+    onDeleteExpense={async (id) => { await syncCloud('成本已刪除並同步', () => deleteCloudRecord('expenses', id)); setData((current) => ({ ...current, expenses: current.expenses.filter((item) => item.id !== id) })) }}
     onAddExchange={addExchange}
     onUpdateExchange={updateExchange}
-    onToggleExchange={(id, field) => { setData((current) => ({ ...current, exchanges: current.exchanges.map((item) => item.id === id ? { ...item, [field]: !item[field] } : item) })); notify('狀態已更新') }}
-    onDeleteExchange={(id) => { deleteFromCloud('exchanges', id); setData((current) => ({ ...current, exchanges: current.exchanges.filter((item) => item.id !== id) })) }}
+    onToggleExchange={async (id, field) => { const existing = data.exchanges.find((item) => item.id === id); if (!existing) return; const item: Exchange = { ...existing, [field]: !existing[field] }; await syncCloud('狀態已更新並同步', () => saveCloudExchange(item)); setData((current) => ({ ...current, exchanges: current.exchanges.map((exchange) => exchange.id === id ? item : exchange) })) }}
+    onDeleteExchange={async (id) => { await syncCloud('交換資料已刪除並同步', () => deleteCloudRecord('exchanges', id)); setData((current) => ({ ...current, exchanges: current.exchanges.filter((item) => item.id !== id) })) }}
   />
   return (
     <main className="min-h-screen bg-gradient-to-b from-rosequartz-50 via-serenity-50 to-slate-50">
