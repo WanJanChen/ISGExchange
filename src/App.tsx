@@ -80,5 +80,51 @@ export default function App() {
     onToggleExchange={(id, field) => { setData((current) => ({ ...current, exchanges: current.exchanges.map((item) => item.id === id ? { ...item, [field]: !item[field] } : item) })); notify('狀態已更新') }}
     onDeleteExchange={(id) => { deleteFromCloud('exchanges', id); setData((current) => ({ ...current, exchanges: current.exchanges.filter((item) => item.id !== id) })) }}
   />
-  return <main className="min-h-screen bg-gradient-to-b from-rosequartz-50 via-serenity-50 to-slate-50"><div className="mx-auto max-w-2xl p-4 pb-12 sm:p-6"><header className="mb-7 pt-3 sm:pt-6"><div className="mb-3 flex items-center gap-2 text-rosequartz-600"><Heart size={20} fill="currentColor" /><span className="text-sm font-black tracking-widest">MY SUPPORT KIT</span></div><h1 className="text-3xl font-black tracking-tight text-slate-800">演唱會應援禮物交換</h1><p className="mt-2 text-sm leading-relaxed text-slate-500">管理製作成本、交換夥伴與現場發放數量。</p></header>{notice && <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-slate-800 px-4 py-3 text-sm font-bold text-white shadow-lg">{notice}</div>}<div className="space-y-4">{data.events.map((event) => <EventCard key={event.id} event={event} total={data.expenses.filter((item) => item.eventId === event.id).reduce((sum, item) => sum + expenseTotal(item), 0)} dateCount={data.dates.filter((date) => date.eventId === event.id).length} onOpen={() => setSelectedEventId(event.id)} onEdit={() => { setEditingEventId(event.id); setShowForm(false) }} onDelete={() => deleteEvent(event.id, event.title)} />)}</div>{editingEvent ? <div className="mt-5"><EventForm event={editingEvent} firstDate={data.dates.find((date) => date.eventId === editingEvent.id)?.dateLabel} onSubmit={updateEvent} onCancel={() => setEditingEventId(undefined)} /></div> : showForm ? <div className="mt-5"><EventForm onSubmit={addEvent} onCancel={() => setShowForm(false)} /></div> : <button type="button" onClick={() => setShowForm(true)} className="primary-button mt-5 w-full"><Plus size={20} />建立新活動</button>}{data.events.length === 0 && !showForm && <div className="mt-10 text-center text-sm text-slate-400">建立第一場活動，開始整理你的應援計畫吧！</div>}<p className="mt-8 text-center text-xs text-slate-400">資料會安全地同步至你的 Supabase 雲端帳號。</p></div></main>
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-rosequartz-50 via-serenity-50 to-slate-50">
+      <div className="mx-auto max-w-2xl p-4 pb-12 sm:p-6">
+        <header className="mb-7 pt-3 sm:pt-6">
+          <div className="mb-3 flex items-center gap-2 text-rosequartz-600">
+            <Heart size={20} fill="currentColor" />
+            <span className="text-sm font-black tracking-widest">MY SUPPORT KIT</span>
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-slate-800">演唱會應援禮物交換</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">管理製作成本、交換夥伴與現場發放數量。</p>
+        </header>
+
+        {notice && <div role="status" className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-slate-800 px-4 py-3 text-sm font-bold text-white shadow-lg">{notice}</div>}
+
+        {editingEvent ? (
+          <div className="mb-5">
+            <EventForm event={editingEvent} firstDate={data.dates.find((date) => date.eventId === editingEvent.id)?.dateLabel} onSubmit={updateEvent} onCancel={() => setEditingEventId(undefined)} />
+          </div>
+        ) : showForm ? (
+          <div className="mb-5">
+            <EventForm onSubmit={addEvent} onCancel={() => setShowForm(false)} />
+          </div>
+        ) : (
+          <button type="button" onClick={() => setShowForm(true)} className="primary-button mb-5 w-full">
+            <Plus size={20} />建立新活動
+          </button>
+        )}
+
+        <div className="space-y-4">
+          {data.events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              total={data.expenses.filter((item) => item.eventId === event.id).reduce((sum, item) => sum + expenseTotal(item), 0)}
+              dateCount={data.dates.filter((date) => date.eventId === event.id).length}
+              onOpen={() => setSelectedEventId(event.id)}
+              onEdit={() => { setEditingEventId(event.id); setShowForm(false) }}
+              onDelete={() => deleteEvent(event.id, event.title)}
+            />
+          ))}
+        </div>
+
+        {data.events.length === 0 && !showForm && <div className="mt-10 text-center text-sm text-slate-400">建立第一場活動，開始整理你的應援計畫吧！</div>}
+        <p className="mt-8 text-center text-xs text-slate-400">資料會安全地同步至你的 Supabase 雲端帳號。</p>
+      </div>
+    </main>
+  )
 }
