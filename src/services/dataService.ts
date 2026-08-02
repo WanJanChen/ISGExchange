@@ -57,12 +57,12 @@ export async function initializeData() {
   return cloudIsEmpty ? local : cloud
 }
 
-function idsForNotIn(ids: string[]) { return `(${ids.map((id) => `"${id}"`).join(',')})` }
-async function deleteMissing(table: 'events' | 'expenses' | 'event_dates' | 'exchanges', userId: string, ids: string[]) {
+type DataTable = 'events' | 'expenses' | 'event_dates' | 'exchanges'
+
+export async function deleteCloudRecord(table: DataTable, id: string) {
   if (!supabase) return
-  let request = supabase.from(table).delete().eq('user_id', userId)
-  if (ids.length) request = request.not('id', 'in', idsForNotIn(ids))
-  const { error } = await request
+  const userId = await currentUserId()
+  const { error } = await supabase.from(table).delete().eq('id', id).eq('user_id', userId)
   if (error) throw error
 }
 
@@ -78,8 +78,4 @@ export async function persistData(data: AppData) {
   if (dates.length) { const { error } = await supabase.from('event_dates').upsert(dates); if (error) throw error }
   if (expenses.length) { const { error } = await supabase.from('expenses').upsert(expenses); if (error) throw error }
   if (exchanges.length) { const { error } = await supabase.from('exchanges').upsert(exchanges); if (error) throw error }
-  await deleteMissing('exchanges', userId, data.exchanges.map((item) => item.id))
-  await deleteMissing('expenses', userId, data.expenses.map((item) => item.id))
-  await deleteMissing('event_dates', userId, data.dates.map((item) => item.id))
-  await deleteMissing('events', userId, data.events.map((item) => item.id))
 }
