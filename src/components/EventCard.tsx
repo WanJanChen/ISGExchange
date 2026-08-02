@@ -1,5 +1,6 @@
 import { CalendarDays, ChevronRight, Pencil, ReceiptText, Trash2 } from 'lucide-react'
 import type { Event } from '../types'
+import { useStoredImage } from './StoredImage'
 
 interface Props {
   event: Event
@@ -11,8 +12,9 @@ interface Props {
 }
 
 export function EventCard({ event, total, dateCount, onOpen, onDelete, onEdit }: Props) {
+  const posterUrl = useStoredImage(event.posterImage)
   return <article className="relative overflow-hidden rounded-3xl border border-rosequartz-100 bg-white p-5 shadow-sm">
-    {event.posterImage && <><div className="absolute inset-0 bg-cover bg-center opacity-[0.32]" style={{ backgroundImage: `url(${event.posterImage})` }} /><div className="absolute inset-0 bg-white/58" /></>}
+    {posterUrl && <><div className="absolute inset-0 bg-cover bg-center opacity-[0.32]" style={{ backgroundImage: `url(${posterUrl})` }} /><div className="absolute inset-0 bg-white/58" /></>}
     <button type="button" onClick={onOpen} className="relative block w-full text-left">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div><p className="mb-1 text-xs font-bold tracking-wider text-rosequartz-600">CONCERT PROJECT</p><h2 className="text-lg font-bold leading-snug text-slate-800">{event.title}</h2></div>

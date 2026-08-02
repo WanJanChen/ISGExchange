@@ -12,16 +12,16 @@ interface Props {
   reservedCounts?: Record<string, number>
   giftOptions?: { id: string; name: string }[]
   onBack: () => void
-  onAddDate: (label: string) => string | Promise<string>
-  onUpdateDate?: (id: string, label: string) => void | Promise<void>
-  onDeleteDate: (id: string) => void | Promise<void>
-  onAddExpense: (name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void | Promise<void>
-  onUpdateExpense: (id: string, name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void | Promise<void>
-  onDeleteExpense: (id: string) => void | Promise<void>
-  onAddExchange: (dateId: string, draft: ExchangeDraft) => void | Promise<void>
-  onUpdateExchange: (id: string, draft: ExchangeDraft) => void | Promise<void>
-  onToggleExchange: (id: string, field: 'isPrepared' | 'isCompleted') => void | Promise<void>
-  onDeleteExchange: (id: string) => void | Promise<void>
+  onAddDate: (label: string) => string
+  onUpdateDate?: (id: string, label: string) => void
+  onDeleteDate: (id: string) => void
+  onAddExpense: (name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void
+  onUpdateExpense: (id: string, name: string, amounts: ExpenseAmount[], note: string, image: string | undefined, quantity: number) => void
+  onDeleteExpense: (id: string) => void
+  onAddExchange: (dateId: string, draft: ExchangeDraft) => void
+  onUpdateExchange: (id: string, draft: ExchangeDraft) => void
+  onToggleExchange: (id: string, field: 'isPrepared' | 'isCompleted') => void
+  onDeleteExchange: (id: string) => void
 }
 
 export function EventDetail(props: Props) {
@@ -59,7 +59,7 @@ export function EventDetail(props: Props) {
     }, 0)
   }
 
-  const addDate = async (event: FormEvent) => {
+  const addDate = (event: FormEvent) => {
     event.preventDefault()
     if (!newDate) {
       setError('請先選擇日期。')
@@ -69,7 +69,7 @@ export function EventDetail(props: Props) {
       setError('此日期已經存在。')
       return
     }
-    setSelectedDate(await props.onAddDate(newDate))
+    setSelectedDate(props.onAddDate(newDate))
     setNewDate('')
     setIsAdding(false)
     setError('')
@@ -88,7 +88,7 @@ export function EventDetail(props: Props) {
     setError('')
   }
 
-  const saveEditedDate = async (id: string) => {
+  const saveEditedDate = (id: string) => {
     if (!editingDate) {
       setError('請先選擇日期。')
       return
@@ -97,15 +97,15 @@ export function EventDetail(props: Props) {
       setError('此日期已經存在。')
       return
     }
-    if (props.onUpdateDate) await props.onUpdateDate(id, editingDate)
+    if (props.onUpdateDate) props.onUpdateDate(id, editingDate)
     else window.dispatchEvent(new CustomEvent('update-event-date', { detail: { id, label: editingDate } }))
     cancelEditing()
   }
 
-  const deleteDate = async (id: string) => {
+  const deleteDate = (id: string) => {
     if (props.dates.length <= 1 || !window.confirm('確定要刪除此活動日期嗎？當日交換資料也會一併刪除。')) return
     const next = props.dates.find((item) => item.id !== id)
-    await props.onDeleteDate(id)
+    props.onDeleteDate(id)
     if (selectedDate === id) setSelectedDate(next?.id ?? '')
   }
 

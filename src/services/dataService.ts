@@ -60,46 +60,10 @@ export async function initializeData() {
   if (error) throw error
   const cloud = fromCloud(events.data as CloudEvent[], expenses.data as CloudExpense[], dates.data as CloudDate[], exchanges.data as CloudExchange[])
   const cloudIsEmpty = cloud.events.length === 0 && cloud.expenses.length === 0 && cloud.dates.length === 0 && cloud.exchanges.length === 0
-  const localHasData = local.events.length > 0 || local.expenses.length > 0 || local.dates.length > 0 || local.exchanges.length > 0
-  if (cloudIsEmpty && localHasData) {
-    await persistData(local)
-    return local
-  }
-  return cloud
+  return cloudIsEmpty ? local : cloud
 }
 
 type DataTable = 'events' | 'expenses' | 'event_dates' | 'exchanges'
-
-async function upsertCloudRow(table: DataTable, row: Record<string, unknown>) {
-  if (!supabase) return
-  const { error } = await supabase.from(table).upsert(row)
-  if (error) throw error
-}
-
-export async function saveCloudEvent(item: Event) {
-  if (!supabase) return
-  const userId = await currentUserId()
-  await upsertCloudRow('events', { id: item.id, user_id: userId, title: item.title, created_at: item.createdAt, poster_image: item.posterImage ?? null })
-}
-
-export async function saveCloudDate(item: EventDate) {
-  if (!supabase) return
-  const userId = await currentUserId()
-  await upsertCloudRow('event_dates', { id: item.id, user_id: userId, event_id: item.eventId, date_label: item.dateLabel })
-}
-
-export async function saveCloudExpense(item: Expense) {
-  if (!supabase) return
-  const userId = await currentUserId()
-  await upsertCloudRow('expenses', { id: item.id, user_id: userId, event_id: item.eventId, item_name: item.itemName, amount: item.amount, note: item.note ?? null, item_image: item.itemImage ?? null, amounts: item.amounts ?? [], quantity: item.quantity ?? null })
-}
-
-export async function saveCloudExchange(item: Exchange) {
-  if (!supabase) return
-  const userId = await currentUserId()
-  const senderExpenseIds = item.senderExpenseIds ?? (item.senderExpenseId ? [item.senderExpenseId] : [])
-  await upsertCloudRow('exchanges', { id: item.id, user_id: userId, event_date_id: item.eventDateId, contact_handle: item.contactHandle, contact_platform: item.contactPlatform ?? null, nickname: item.nickname ?? null, receiver_item_text: item.receiverItemText, receiver_item_image: item.receiverItemImage ?? null, sender_item_text: item.senderItemText, sender_expense_id: senderExpenseIds[0] ?? null, sender_expense_ids: senderExpenseIds, is_prepared: item.isPrepared, is_completed: item.isCompleted, note: item.note ?? null })
-}
 
 export async function deleteCloudRecord(table: DataTable, id: string) {
   if (!supabase) return

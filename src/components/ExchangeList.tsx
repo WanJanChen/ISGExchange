@@ -11,8 +11,9 @@ import {
   X,
 } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
-import { compressImage } from "../lib/storage";
+import { uploadImage } from "../lib/imageStorage";
 import type { Exchange, ExchangeDraft, SocialPlatform } from "../types";
+import { StoredImage } from "./StoredImage";
 
 const platformBase = (platform: SocialPlatform) =>
   platform === "instagram"
@@ -62,10 +63,10 @@ function toDraft(exchange: Exchange): ExchangeDraft {
 interface Props {
   exchanges: Exchange[];
   giftOptions: { id: string; name: string }[];
-  onAdd: (draft: ExchangeDraft) => void | Promise<void>;
-  onUpdate: (id: string, draft: ExchangeDraft) => void | Promise<void>;
-  onToggle: (id: string, field: "isPrepared" | "isCompleted") => void | Promise<void>;
-  onDelete: (id: string) => void | Promise<void>;
+  onAdd: (draft: ExchangeDraft) => void;
+  onUpdate: (id: string, draft: ExchangeDraft) => void;
+  onToggle: (id: string, field: "isPrepared" | "isCompleted") => void;
+  onDelete: (id: string) => void;
 }
 
 export function ExchangeList({
@@ -107,13 +108,13 @@ export function ExchangeList({
     if (!file) return;
     setLoadingImage(true);
     try {
-      set("image", await compressImage(file));
+      set("image", await uploadImage(file, "exchanges"));
     } finally {
       setLoadingImage(false);
     }
   };
   const platforms: SocialPlatform[] = ["threads", "instagram"];
-  const save = async (event: FormEvent) => {
+  const save = (event: FormEvent) => {
     event.preventDefault();
     if (
       !draft.contact.trim() ||
@@ -121,8 +122,8 @@ export function ExchangeList({
       draft.senderExpenseIds.length === 0
     )
       return;
-    if (editingId) await onUpdate(editingId, draft);
-    else await onAdd(draft);
+    if (editingId) onUpdate(editingId, draft);
+    else onAdd(draft);
     closeEditor();
   };
 
@@ -177,7 +178,7 @@ export function ExchangeList({
         <Camera size={18} />
         {loadingImage ? "正在處理圖片…" : draft.image ? "更換對方交換物照片" : "加入對方交換物照片"}
       </button>
-      {draft.image && <img src={draft.image} alt="對方交換物預覽" className="h-36 w-full rounded-2xl object-cover" />}
+      {draft.image && <StoredImage src={draft.image} alt="對方交換物預覽" className="h-36 w-full rounded-2xl object-cover" />}
       <button className="primary-button w-full" disabled={giftOptions.length === 0}>
         {editingId ? "儲存修改" : "新增交換夥伴"}
       </button>
@@ -221,7 +222,7 @@ export function ExchangeList({
           >
             <div className="flex flex-col gap-3">
               {exchange.receiverItemImage ? (
-                <img
+                <StoredImage
                   src={exchange.receiverItemImage}
                   alt="對方應援物"
                   className="h-[200px] w-[200px] max-w-[45%] shrink-0 rounded-2xl object-cover"
@@ -331,7 +332,7 @@ export function ExchangeList({
               </button>
             </div>
             {selected.receiverItemImage ? (
-              <img
+              <StoredImage
                 src={selected.receiverItemImage}
                 alt="對方應援物大圖"
                 className="h-[48vh] min-h-72 w-full rounded-2xl object-cover"
