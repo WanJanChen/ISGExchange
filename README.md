@@ -8,8 +8,6 @@
 
 本專案使用 React、TypeScript、Tailwind CSS 與 Supabase 開發，定位為個人練習及個人使用的小工具。
 
-(截圖待補)
-
 ## 功能特色
 
 - 儲存曾經進行應援交換的演唱會活動
@@ -30,7 +28,7 @@
 
 本工具不需另外下載，可直接透過瀏覽器開啟：
 
-👉 [開啟應援交換小幫手](https://isgexchange.onrender.com)
+👉 <a href="https://isgexchange.onrender.com" target="_blank">開啟應援交換小幫手</a>
 
 > 本網站部署於 Render，若一段時間無人使用，首次開啟時可能需要稍候片刻。
 
@@ -40,9 +38,9 @@
 
 以下以 Google Chrome 為例：
 
-| 自動顯示安裝提示 | 手動加入主畫面 |
-|:---:|:---:|
-| <img src="ReadmePictures/1-1手機板安裝捷徑至桌面.jpg" width="220" alt="Chrome 顯示安裝捷徑提示"> | <img src="ReadmePictures/1-2手機板手動安裝捷徑至桌面(chrome).jpg" width="220" alt="透過 Chrome 選單手動加入主畫面"> |
+| 自動顯示安裝提示 | 手動加入主畫面 | 桌面捷徑示意圖 |
+|:---:|:---:|:---:|
+| <img src="ReadmePictures/1-1手機板安裝捷徑至桌面.jpg" width="220" alt="Chrome 顯示安裝捷徑提示"> | <img src="ReadmePictures/1-2手機板手動安裝捷徑至桌面(chrome).jpg" width="220" alt="透過 Chrome 選單手動加入主畫面"> | <img src="ReadmePictures/1-3捷徑安裝完成.jpg" width="220" alt="Chrome 捷徑示意圖"> |
 
 若畫面沒有自動顯示安裝提示，可以開啟 Chrome 選單，選擇「加到主畫面」或「安裝應用程式」。
 
@@ -93,4 +91,11 @@
 
 如果準備的應援物品項較多，活動當天可以把應援物清單上縮，方便檢視交換夥伴清單。
 
-<img src="ReadmePictures/6.應援物項目清單可往上縮.jpg" width="220"><img src="ReadmePictures/6-1.應援物項目往上縮效果.jpg" width="220">
+<img src="ReadmePictures/6.應援物項目清單可往上縮.jpg" width="220">　<img src="ReadmePictures/6-1.應援物項目往上縮效果.jpg" width="220">
+
+
+### 8. 電腦版
+
+電腦版也提供相同的功能。  
+
+<img src="ReadmePictures/7.電腦版.jpg"  width="50%" height="50%">
