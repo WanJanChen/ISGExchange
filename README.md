@@ -25,11 +25,72 @@
 
 
 ## 使用說明
-1-1.這個小工具可以直接使用瀏覽器輸入網址開啟：<a href="https://isgexchange.onrender.com">https://isgexchange.onrender.com</a></br>
-1-2.行動裝置可安裝成桌面捷徑快速開啟(使用google chrome)</br>
-<img src="ReadmePictures/1-1手機板安裝捷徑至桌面.jpg" width="20%" height="20%">
-<img src="ReadmePictures/1-2手機板手動安裝捷徑至桌面(chrome).jpg" width="20%" height="20%"></br>
-2-1.首次使用時需要註冊帳號，請設定Email與密碼後進行登入</br>
-<img src="ReadmePictures/2.首次使用註冊登入畫面.jpg" width="20%" height="20%"></br>
 
+### 1. 開啟網站
 
+本工具不需另外下載，可直接透過瀏覽器開啟：
+
+👉 [開啟應援交換小幫手](https://isgexchange.onrender.com)
+
+> 本網站部署於 Render，若一段時間無人使用，首次開啟時可能需要稍候片刻。
+
+### 2. 將網站加入手機主畫面
+
+使用行動裝置時，可以將網站加入主畫面，之後就能像一般 App 一樣快速開啟。
+
+以下以 Google Chrome 為例：
+
+| 自動顯示安裝提示 | 手動加入主畫面 |
+|:---:|:---:|
+| <img src="ReadmePictures/1-1手機板安裝捷徑至桌面.jpg" width="220" alt="Chrome 顯示安裝捷徑提示"> | <img src="ReadmePictures/1-2手機板手動安裝捷徑至桌面(chrome).jpg" width="220" alt="透過 Chrome 選單手動加入主畫面"> |
+
+若畫面沒有自動顯示安裝提示，可以開啟 Chrome 選單，選擇「加到主畫面」或「安裝應用程式」。
+
+### 3. 註冊及登入
+
+首次使用時，請先註冊帳號：
+
+1-1. 輸入電子郵件地址。  
+1-2. 設定登入密碼。  
+1-3. 完成註冊後，使用相同的電子郵件與密碼登入。  
+<img src="ReadmePictures/2.首次使用註冊登入畫面.jpg" width="220" alt="Chrome 顯示安裝捷徑提示">
+
+### 4. 首頁與活動管理 
+
+登入後的首頁為活動清單，會列出過往活動紀錄，也可以建立新活動。  
+
+| 首頁活動列表 | 建立活動 |
+|:---:|:---:|
+| <img src="ReadmePictures/3-1.點選建立活動.jpg" width="220" alt="建立活動"> | <img src="ReadmePictures/3-2.輸入活動內容.jpg" width="220" alt="建立活動"> |
+
+### 5. 應援物管理
+
+建立活動後會進到活動內容頁面，首先可以先新增本次要製作的應援物，並記錄花費的成本。
+
+| 活動內容頁面 | 新增應援物內容 |
+|:---:|:---:|
+| <img src="ReadmePictures/4-1.點選新增內容.jpg" width="220" alt="新增應援物"> | <img src="ReadmePictures/4-2.新增應援物項目與成本.jpg" width="220" alt="新增應援物內容"> |
+
+### 6. 交換夥伴管理
+
+接下來可以新增交換夥伴，如果有填寫社群資訊，新增後可以透過點選夥伴卡片上的小圖示，直接連到該夥伴的社群帳號。
+
+| 點選新增交換夥伴 | 新增交換夥伴內容 | 新增完成 |
+|:---:|:---:|:---:|
+| <img src="ReadmePictures/5.新增交換夥伴.jpg" width="220" alt="新增交換夥伴"> | <img src="ReadmePictures/5-1.填寫交換夥伴資料.jpg" width="220" alt="新增交換夥伴2"> | <img src="ReadmePictures/5-2.新增完成.jpg" width="220" alt="新增交換夥伴完成"> |
+
+新增完成後透過標記該夥伴對應的應援物準備狀態/交換狀態，來管理交換清單，標記為**已交換**的夥伴排序會自動往後。
+點選交換夥伴卡片，可以檢視詳細資訊：交換夥伴應援物大圖、備註內容(如交換地點等)。
+
+| 標記狀態 | 交換夥伴詳細資訊 |
+|:---:|:---:|
+| <img src="ReadmePictures/5-3.可標記應援已準備、以交換狀態.jpg" width="220" alt="標記夥伴狀態"> | <img src="ReadmePictures/5-4.點夥伴卡片可以看詳細資訊.jpg" width="220" alt="交換夥伴詳細資訊"> |
+
+應援物中的**已預約、可交換**數量會隨著交換夥伴要交換的品項動態調整。  
+<img src="ReadmePictures/5-6.應援物會根據交換夥伴資訊調整可發送數量.jpg" width="220" alt="應援物數量動態調整">  
+
+### 7. 應援物清單上縮功能
+
+如果準備的應援物品項較多，活動當天可以把應援物清單上縮，方便檢視交換夥伴清單。
+
+<img src="ReadmePictures/6.應援物項目清單可往上縮.jpg" width="220"><img src="ReadmePictures/6-1.應援物項目往上縮效果.jpg" width="220">
