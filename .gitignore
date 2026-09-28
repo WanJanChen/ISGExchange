@@ -2,3 +2,7 @@ node_modules/
 dist/
 .env
 .env.local
+automation/.env
+automation/.venv/
+automation/logs/
+automation/error-screenshot.png
